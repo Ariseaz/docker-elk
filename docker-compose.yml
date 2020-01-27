@@ -34,7 +34,7 @@ services:
     depends_on:
       - logstash
     ports:
-      - 80:80
+      - 8000:80
     logging:
       driver: gelf
       options:
