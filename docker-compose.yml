@@ -21,7 +21,7 @@ services:
       - logging-network
 
   kibana:
-    image: docker.elastic.co/kibana/kibana:7.1.1
+    image: docker.elastic.co/kibana/kibana:6.4.2
     depends_on:
       - logstash
     ports: 
@@ -43,6 +43,43 @@ services:
         # issue: https://github.com/lvthillo/docker-elk/issues/1
         gelf-address: "udp://localhost:12201"
 
+ #Nginx container
+  nginx:
+    container_name: nginx
+    hostname: nginx
+    build: ${PWD}/config/nginx
+    #Expose port 80 to allow users to hit content and generate data for filebeat and packetbeat
+    ports: ['80:80']
+    command: nginx -g 'daemon off;'
+    volumes:
+      #Logs are mounted to a relative path. These are also accessed by Filebeat and consumed by the Nginx module
+      - ./logs/nginx/:/var/log/nginx/
+    networks: 
+      - logging-network
+
+ #Mysql container
+  mysql:
+    container_name: mqsql
+    hostname: mysql
+    build: ${PWD}/config/mysql
+    environment:
+      - "MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}"
+    #Expose port 3306 to allow users to connect and perform operations. These will be picked up by Packetbeat, Filebeat and Metricbeat
+    ports: ['3306:3306']
+    command: bash -c "chown -R mysql:mysql /var/log/mysql && exec /entrypoint.sh mysqld"
+    volumes:
+      #Use named volume so mysql data is persisted across restart
+      - mysqldata:/var/lib/mysql/
+      #Logs are mounted to a relative path. These are also accessed by Filebeat and consumed by the Mysql module
+      - ./logs/mysql:/var/log/mysql/
+    networks: 
+      - logging-network
+
+
 networks: 
   logging-network:
+    driver: bridge
+volumes:
+  #Mysql data
+  mysqldata:
     driver: bridge
