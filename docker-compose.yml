@@ -91,4 +91,4 @@ networks:
 volumes:
   #Mysql data
   mysqldata:
-    driver: gelf
+    driver: local
