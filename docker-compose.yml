@@ -6,6 +6,8 @@ services:
     environment: 
       - discovery.type=single-node
       - xpack.security.enabled=false
+      - http.host=0.0.0.0
+      - transport.host=127.0.0.1
     networks: 
       - logging-network
 
@@ -52,8 +54,6 @@ services:
     volumes:
       #Logs are mounted to a relative path. These are also accessed by Filebeat and consumed by the Nginx module
       - ./logs/nginx/:/var/log/nginx/
-    networks: 
-      - logging-network
     networks: 
       - logging-network
     logging:
